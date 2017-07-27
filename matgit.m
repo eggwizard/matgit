@@ -9,19 +9,26 @@ if ismac()
 end
 
 
-if nargin~=1
-    disp('Check input parameters!');
-    disp('Usage: matgit [OPTION]');
-    disp('OPTION');
-    disp('  push : zip and push to Dropbox directory');
-    disp('  pull : Copy from dropbox dir. and extract the zip file');
-    disp(' ');    
+if nargin<1
+    disp_warning();
     return
 end
 
 
 switch(varargin{1})
-    case 'push'     
+    case 'push'
+        except_ext = [];
+        
+        if nargin>1
+            if (varargin{2} ~= '-') || (nargin ~= 3)
+                disp_warning();
+                return
+            end
+            
+            except_ext = ['.', varargin{3}]
+            
+        end
+        
         [~, zip_name_proc, ~] = fileparts(pwd)
         zip_name = [zip_name_proc, '.zip']
         cur_dir = pwd;
@@ -34,7 +41,8 @@ switch(varargin{1})
         % zip(zip_name, cur_dir);
         
         for cnt = 1:length(dirinfo)
-            if dirinfo(cnt).isdir == 0
+%             if dirinfo(cnt).isdir == 0
+            if (dirinfo(cnt).isdir == 0)&&(isempty(strfind(dirinfo(cnt).name, except_ext)))
                 list_tobe_zipped = [list_tobe_zipped; {['./',zip_name_proc,'/',dirinfo(cnt).name]}];
             end
         end
@@ -77,13 +85,18 @@ switch(varargin{1})
         fprintf('Restore is completed!\n');
         
     otherwise
-        disp('Check input parameters!');
-        disp('Usage: matgit [OPTION]');
-        disp('OPTION');
-        disp('  push : zip and push to Dropbox directory');
-        disp('  pull : Copy from dropbox dir. and extract the zip file');
-        disp(' ');
+        disp_warning();
         return
 end
 
+end
 
+function disp_warning()
+disp('Check input parameters!');
+disp('Usage: matgit [push] [pull] [push - EXTENSION]');
+disp('OPTIONS');
+disp('  push : zip and push to Dropbox directory');
+disp('  push - EXTENSION : push except a specific extension');
+disp('  pull : Copy from dropbox dir. and extract the zip file');
+disp(' ');
+end
